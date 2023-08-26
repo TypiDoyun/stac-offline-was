@@ -3,12 +3,18 @@ import {
     PutObjectCommandInput,
     S3Client
 } from "@aws-sdk/client-s3";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
 import { Clothes } from "./clothes.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Merchant } from "src/auth/merchant/merchant.entity";
+import { MerchantRepository } from "src/auth/merchant/merchant.repository";
 
 @Injectable()
 export class ClothesService {
@@ -17,7 +23,8 @@ export class ClothesService {
     constructor(
         private readonly configService: ConfigService,
         @InjectRepository(Clothes)
-        private readonly clothesRepository: Repository<Clothes>
+        private readonly clothesRepository: Repository<Clothes>,
+        private readonly merchantRepository: MerchantRepository
     ) {
         this.S3 = new S3Client({
             region: this.configService.getOrThrow("AWS_BUCKET_REGION"),
@@ -33,8 +40,9 @@ export class ClothesService {
     }
 
     public async createClothes(
-        images: Express.Multer.File[],
-        createClothesDto: CreateClothesDto
+        images: Express.Multer.File[] = [],
+        createClothesDto: CreateClothesDto,
+        merchant: Merchant
     ) {
         const imageLinks: string[] = [];
         for (const image of images) {
@@ -50,7 +58,7 @@ export class ClothesService {
                 await this.S3.send(new PutObjectCommand(params));
             } catch (error) {
                 throw new BadRequestException(
-                    "Can't send PutObjectCommand to S3"
+                    "can't send PutObjectCommand to S3"
                 );
             }
             const imageLink = `https://${this.configService.getOrThrow(
@@ -59,10 +67,48 @@ export class ClothesService {
 
             imageLinks.push(imageLink);
         }
+        try {
+            await this.clothesRepository.save({
+                ...createClothesDto,
+                images: imageLinks,
+                ownerId: merchant._id
+            });
+        } catch (error) {
+            if (error.code === 11000)
+                throw new ConflictException("clothes already exists");
+            throw error;
+        }
+    }
 
-        await this.clothesRepository.save({
-            ...createClothesDto,
-            images: imageLinks
+    public async findClothes(name: string) {
+        return this.clothesRepository.findOne({
+            relations: ["ownClothes"],
+            where: {
+                name
+            }
         });
+    }
+
+    public async findClothesByLocation(location: number[]) {
+        const merchants = await this.merchantRepository.findMerchantByLocation(
+            location,
+            100
+        );
+        console.log(merchants);
+        const clothes = [];
+
+        for (const merchant of merchants) {
+            const clothesList = await this.clothesRepository.find({
+                where: {
+                    ownerId: merchant._id
+                }
+            });
+
+            clothes.push(...clothesList);
+        }
+
+        console.log(clothes);
+
+        return clothes;
     }
 }

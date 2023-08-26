@@ -18,7 +18,13 @@ import { ConfigModule } from "@nestjs/config";
                 AWS_BUCKET_REGION: Joi.string().required(),
                 AWS_BUCKET_NAME: Joi.string().required(),
                 AWS_BUCKET_ACCESS_KEY: Joi.string().required(),
-                AWS_BUCKET_PRIVATE_KEY: Joi.string().required()
+                AWS_BUCKET_PRIVATE_KEY: Joi.string().required(),
+                JWT_ACCESS_SECRET_KEY: Joi.string().required(),
+                JWT_ACCESS_EXPIRATION_TIME: Joi.string().required(),
+                JWT_REFRESH_SECRET_KEY: Joi.string().required(),
+                JWT_REFRESH_EXPIRATION_TIME: Joi.string().required(),
+                BUSINESSMAN_HOST: Joi.string().required(),
+                BUSINESSMAN_SECRET_KEY: Joi.string().required()
             })
         })
     ]

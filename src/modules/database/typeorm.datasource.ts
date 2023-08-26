@@ -12,7 +12,7 @@ export const options: DataSourceOptions = {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: false,
+    synchronize: true,
     authSource: "admin",
     logging: true,
     entities: ["dist/**/*.entity.{js,ts}"]

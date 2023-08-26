@@ -1,7 +1,4 @@
-import { BadRequestException } from "@nestjs/common";
-import { Transform } from "class-transformer";
 import {
-    IsArray,
     IsEmpty,
     IsNotEmpty,
     IsNumber,
@@ -11,10 +8,12 @@ import {
     Max,
     Min
 } from "class-validator";
+import { ObjectId } from "mongodb";
 import { BaseEntity } from "src/modules/database/core.entity";
-import { Column, Entity } from "typeorm";
+import { Column, Entity, Unique } from "typeorm";
 
 @Entity("clothes")
+@Unique(["name"])
 export class Clothes extends BaseEntity {
     @Column()
     @IsString()
@@ -32,12 +31,12 @@ export class Clothes extends BaseEntity {
     @IsNotEmpty()
     @Min(0)
     @Max(10)
-    public size: Size;
+    public size: string;
 
     @Column()
     @IsString()
     @IsNotEmpty()
-    @Length(2, 20)
+    @Length(2, 500)
     public comment: string;
 
     @Column()
@@ -45,27 +44,10 @@ export class Clothes extends BaseEntity {
     @IsNotEmpty()
     public discountRate: number;
 
-    @Column()
-    @IsArray()
-    @IsNotEmpty()
-    @Transform(({ value }) => {
-        if (!value.every((item) => item.constructor.name === "String"))
-            throw new BadRequestException(["tags must be string array"]);
-        return value;
-    })
-    public tags: string[];
-
-    @Column()
+    @Column({ array: true })
     @IsEmpty()
     public images: string[];
-}
 
-export enum Size {
-    FREE,
-    XS,
-    S,
-    M,
-    L,
-    XL,
-    TWO_XL
+    @Column()
+    public ownerId: ObjectId;
 }

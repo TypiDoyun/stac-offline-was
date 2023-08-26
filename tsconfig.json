@@ -4,6 +4,8 @@
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
+    "lib": ["ES5", "ES6", "DOM"],
+    "moduleResolution": "node",
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
