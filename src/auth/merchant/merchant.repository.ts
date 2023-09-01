@@ -4,6 +4,8 @@ import { Merchant } from "./merchant.entity";
 import { MerchantSignUpDto } from "../dto/merchant-sign-up.dto";
 import { genSalt, hash } from "bcryptjs";
 import { getDistance } from "src/common/utils";
+import { ObjectId } from "mongodb";
+import { RegisterShopDto } from "../dto/register-shop.dto";
 
 @Injectable()
 export class MerchantRepository {
@@ -13,7 +15,14 @@ export class MerchantRepository {
         this.repository = this.dataSource.getRepository(Merchant);
     }
 
-    public async createMerchant(merchantSignUpDto: MerchantSignUpDto) {
+    public async canCreate(id: string) {
+        return !(await this.findMerchantById(id));
+    }
+
+    public async createMerchant(
+        merchantSignUpDto: MerchantSignUpDto,
+        address: string
+    ) {
         const { password } = merchantSignUpDto;
 
         const salt = await genSalt();
@@ -21,20 +30,49 @@ export class MerchantRepository {
 
         const merchant = this.repository.create({
             ...merchantSignUpDto,
-            password: hashedPassword
+            password: hashedPassword,
+            address,
+            shop: null
         });
 
         try {
             return await this.repository.save(merchant);
         } catch (error) {
             if (error.code === 11000)
-                throw new ConflictException("existing user id");
+                throw new ConflictException("user id already exists");
             throw error;
         }
     }
 
+    public async registerShop(
+        registerShopDto: RegisterShopDto,
+        merchant: Merchant
+    ) {
+        const { name, logo, shopNumber, registrationNumber } = registerShopDto;
+        return this.repository.update(
+            {
+                _id: merchant._id
+            },
+            {
+                shop: {
+                    name,
+                    logo,
+                    shopNumber,
+                    registrationNumber,
+                    ownerId: merchant._id
+                }
+            }
+        );
+    }
+
     public async findMerchantById(id: string): Promise<Merchant | undefined> {
         return this.repository.findOneBy({ id });
+    }
+
+    public async findMerchantByOId(
+        objectId: ObjectId
+    ): Promise<Merchant | undefined> {
+        return this.repository.findOneBy({ _id: objectId });
     }
 
     public async updateRefreshToken(id: string, refreshToken: string) {

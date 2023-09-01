@@ -1,4 +1,6 @@
 import {
+    BadRequestException,
+    ConflictException,
     ForbiddenException,
     Injectable,
     UnauthorizedException
@@ -14,17 +16,22 @@ import { JwtTokens } from "./interfaces/jwt-token.interface";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 import { MerchantSignUpDto } from "./dto/merchant-sign-up.dto";
 import { MerchantRepository } from "./merchant/merchant.repository";
+import { HttpService } from "@nestjs/axios";
+import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userRepository: UserRepository,
         private readonly merchantRepository: MerchantRepository,
+        private readonly httpService: HttpService,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService
     ) {}
 
     public async userSignUp(userSignUpDto: UserSignUpDto): Promise<JwtTokens> {
+        if (!(await this.merchantRepository.canCreate(userSignUpDto.id)))
+            throw new ConflictException("user id already exists");
         await this.userRepository.createUser(userSignUpDto);
 
         const tokens = this.getTokens(userSignUpDto.id, false);
@@ -36,16 +43,41 @@ export class AuthService {
     public async merchantSignUp(
         merchantSignUpDto: MerchantSignUpDto
     ): Promise<JwtTokens> {
-        await this.merchantRepository.createMerchant(merchantSignUpDto);
+        const url = `${this.configService.getOrThrow("KAKAO_API_HOST")}?x=${
+            merchantSignUpDto.location[1]
+        }&y=${merchantSignUpDto.location[0]}`;
+        try {
+            const pipe = this.httpService
+                .get(url, {
+                    headers: {
+                        Authorization: `KakaoAK ${this.configService.getOrThrow(
+                            "KAKAO_API_KEY"
+                        )}`
+                    }
+                })
+                .pipe();
 
-        const tokens = this.getTokens(merchantSignUpDto.id, true);
-        this.updateRefreshToken(
-            merchantSignUpDto.id,
-            tokens.refreshToken,
-            true
-        );
+            const response = await lastValueFrom(pipe);
+            if (!(await this.userRepository.canCreate(merchantSignUpDto.id)))
+                throw new ConflictException("user id already exists");
+            await this.merchantRepository.createMerchant(
+                merchantSignUpDto,
+                response.data.documents[0].address_name
+            );
 
-        return tokens;
+            const tokens = this.getTokens(merchantSignUpDto.id, true);
+            this.updateRefreshToken(
+                merchantSignUpDto.id,
+                tokens.refreshToken,
+                true
+            );
+
+            return tokens;
+        } catch (error) {
+            if (error.statusCode === 400)
+                throw new BadRequestException("can not create merchant");
+            else throw error;
+        }
     }
 
     public async signIn(signInDto: SignInDto): Promise<JwtTokens> {

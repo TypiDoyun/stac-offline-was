@@ -40,11 +40,13 @@ export class ClothesService {
     }
 
     public async createClothes(
-        images: Express.Multer.File[] = [],
+        images: Express.Multer.File[],
         createClothesDto: CreateClothesDto,
         merchant: Merchant
     ) {
-        const imageLinks: string[] = [];
+        const imageLinks: string[] = [
+            "https://dy-03-bucket.s3.ap-northeast-2.amazonaws.com/bomb.png"
+        ];
         for (const image of images) {
             const params: PutObjectCommandInput = {
                 Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
@@ -89,13 +91,12 @@ export class ClothesService {
         });
     }
 
-    public async findClothesByLocation(location: number[]) {
+    public async findClothesByLocation(location: number[]): Promise<Clothes[]> {
         const merchants = await this.merchantRepository.findMerchantByLocation(
             location,
-            100
+            1
         );
-        console.log(merchants);
-        const clothes = [];
+        const clothes: Clothes[] = [];
 
         for (const merchant of merchants) {
             const clothesList = await this.clothesRepository.find({
@@ -107,7 +108,14 @@ export class ClothesService {
             clothes.push(...clothesList);
         }
 
-        console.log(clothes);
+        for (let index = 0; index < clothes.length; index++) {
+            clothes[index] = {
+                ...clothes[index],
+                owner: await this.merchantRepository.findMerchantByOId(
+                    clothes[index].ownerId
+                )
+            };
+        }
 
         return clothes;
     }

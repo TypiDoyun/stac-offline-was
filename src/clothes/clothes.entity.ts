@@ -1,14 +1,14 @@
 import {
+    IsArray,
     IsEmpty,
     IsNotEmpty,
     IsNumber,
     IsPositive,
     IsString,
-    Length,
-    Max,
-    Min
+    Length
 } from "class-validator";
 import { ObjectId } from "mongodb";
+import { Merchant } from "src/auth/merchant/merchant.entity";
 import { BaseEntity } from "src/modules/database/core.entity";
 import { Column, Entity, Unique } from "typeorm";
 
@@ -27,11 +27,9 @@ export class Clothes extends BaseEntity {
     public price: number;
 
     @Column()
-    @IsNumber()
+    @IsArray()
     @IsNotEmpty()
-    @Min(0)
-    @Max(10)
-    public size: string;
+    public size: string[];
 
     @Column()
     @IsString()
@@ -50,4 +48,6 @@ export class Clothes extends BaseEntity {
 
     @Column()
     public ownerId: ObjectId;
+
+    public owner: Merchant;
 }

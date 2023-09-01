@@ -24,7 +24,9 @@ import { ConfigModule } from "@nestjs/config";
                 JWT_REFRESH_SECRET_KEY: Joi.string().required(),
                 JWT_REFRESH_EXPIRATION_TIME: Joi.string().required(),
                 BUSINESSMAN_HOST: Joi.string().required(),
-                BUSINESSMAN_SECRET_KEY: Joi.string().required()
+                BUSINESSMAN_SECRET_KEY: Joi.string().required(),
+                KAKAO_API_HOST: Joi.string().required(),
+                KAKAO_API_KEY: Joi.string().required()
             })
         })
     ]

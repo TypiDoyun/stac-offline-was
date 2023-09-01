@@ -1,6 +1,7 @@
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsEmpty, IsNotEmpty, IsString } from "class-validator";
+import { ObjectId } from "mongodb";
 import { Merchant } from "src/auth/merchant/merchant.entity";
-import { BaseEntity, Column, Entity, OneToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity("shop")
 export class Shop extends BaseEntity {
@@ -25,11 +26,8 @@ export class Shop extends BaseEntity {
     public registrationNumber: string;
 
     @Column()
-    @IsNotEmpty()
-    @IsArray()
-    public location: string[];
+    @IsEmpty()
+    public ownerId: ObjectId;
 
-    @IsNotEmpty()
-    @OneToOne(() => Merchant, (merchant) => merchant.shop)
     public owner: Merchant;
 }

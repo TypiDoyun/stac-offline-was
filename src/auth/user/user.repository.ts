@@ -13,6 +13,10 @@ export class UserRepository {
         this.repository = this.dataSource.getRepository(User);
     }
 
+    public async canCreate(id: string) {
+        return !(await this.findUserById(id));
+    }
+
     public async createUser(userSignUpDto: UserSignUpDto) {
         const { password } = userSignUpDto;
 
@@ -28,7 +32,7 @@ export class UserRepository {
             return await this.repository.save(user);
         } catch (error) {
             if (error.code === 11000)
-                throw new ConflictException("existing user id");
+                throw new ConflictException("user id already exists");
             throw error;
         }
     }

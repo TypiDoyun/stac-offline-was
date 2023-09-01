@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ClothesService } from "./clothes.service";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
-import { MerchantPrivate, Private, UserField } from "src/common/decorators";
+import { RegisteredMerchantPrivate, UserField } from "src/common/decorators";
 import { Merchant } from "src/auth/merchant/merchant.entity";
 
 @Controller("clothes")
@@ -25,12 +25,13 @@ export class ClothesController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(FileInterceptor("images"))
-    @MerchantPrivate()
+    @RegisteredMerchantPrivate()
     public createClothes(
-        @UploadedFile() images: Express.Multer.File[],
+        @UploadedFile() images: Express.Multer.File[] = [],
         @Body() createClothesDto: CreateClothesDto,
         @UserField() merchant: Merchant
     ) {
+        console.log("create clothes requiest received!");
         return this.clothesService.createClothes(
             images,
             createClothesDto,
@@ -53,7 +54,11 @@ export class ClothesController {
         @Query("longitude") longitude: number
     ) {
         console.log("clothes find by location request received!");
-        console.log(latitude, longitude);
-        return this.clothesService.findClothesByLocation([latitude, longitude]);
+        const clothes = await this.clothesService.findClothesByLocation([
+            latitude,
+            longitude
+        ]);
+
+        return clothes;
     }
 }

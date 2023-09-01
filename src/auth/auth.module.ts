@@ -11,6 +11,7 @@ import { JwtRefreshStrategy } from "./strategies/jwt-refresh.strategy";
 import { MerchantRepository } from "./merchant/merchant.repository";
 import { MerchantJwtStrategy } from "./strategies/merchant-jwt.strategy";
 import { HttpModule } from "@nestjs/axios";
+import { RegisteredMerchantJwtStrategy } from "./strategies/registered-merchant-jwt.strategy copy";
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { HttpModule } from "@nestjs/axios";
         MerchantRepository,
         JwtStrategy,
         MerchantJwtStrategy,
+        RegisteredMerchantJwtStrategy,
         JwtRefreshStrategy,
         UserService
     ],
@@ -32,6 +34,7 @@ import { HttpModule } from "@nestjs/axios";
         JwtStrategy,
         MerchantJwtStrategy,
         JwtRefreshStrategy,
+        RegisteredMerchantJwtStrategy,
         PassportModule
     ]
 })
