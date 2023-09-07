@@ -47,6 +47,17 @@ export class ClothesService {
         const imageLinks: string[] = [
             "https://dy-03-bucket.s3.ap-northeast-2.amazonaws.com/bomb.png"
         ];
+        try {
+            await this.clothesRepository.save({
+                ...createClothesDto,
+                images: imageLinks,
+                ownerId: merchant._id
+            });
+        } catch (error) {
+            if (error.code === 11000)
+                throw new ConflictException("clothes already exists");
+            throw error;
+        }
         for (const image of images) {
             const params: PutObjectCommandInput = {
                 Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
@@ -68,17 +79,6 @@ export class ClothesService {
             )}.s3.amazonaws.com/${params.Key}`;
 
             imageLinks.push(imageLink);
-        }
-        try {
-            await this.clothesRepository.save({
-                ...createClothesDto,
-                images: imageLinks,
-                ownerId: merchant._id
-            });
-        } catch (error) {
-            if (error.code === 11000)
-                throw new ConflictException("clothes already exists");
-            throw error;
         }
     }
 
@@ -118,5 +118,11 @@ export class ClothesService {
         }
 
         return clothes;
+    }
+
+    public async deleteClothesByName(name: string) {
+        if (!this.clothesRepository.exist({ where: { name } }))
+            throw new BadRequestException("clothes not found");
+        this.clothesRepository.delete({ name });
     }
 }

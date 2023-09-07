@@ -1,9 +1,11 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpCode,
     HttpStatus,
+    Param,
     Post,
     Query,
     UploadedFile,
@@ -60,5 +62,11 @@ export class ClothesController {
         ]);
 
         return clothes;
+    }
+
+    @Delete("/:name")
+    @RegisteredMerchantPrivate()
+    public async deleteClothesByName(@Param("name") name: string) {
+        return this.clothesService.deleteClothesByName(name);
     }
 }

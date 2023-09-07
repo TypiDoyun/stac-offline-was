@@ -1,16 +1,19 @@
-version: '3'
+version: "3"
 
 services:
-  app:
-    build: .
-    ports:
-      - 3000:3000
-  db:
-    image: mongo
-    ports:
-      - 27017:27017
-    volumes:
-      - db_volume:/data/db
-
-volumes:
-  db_volume:
+    app:
+        build: .
+        ports:
+            - 3000:3000
+    db:
+        image: mongo
+        ports:
+            - 27018:27017
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-mongodb}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongodb}
+        volumes:
+            # - db_volume:/data/db
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+# volumes:
+#     db_volume:
