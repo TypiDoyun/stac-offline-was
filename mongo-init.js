@@ -1,20 +1,14 @@
 db = db.getSiblingDB("offline-dbs");
 
-db.createUser({
-    user: process.env.DB_USER,
-    pwd: process.env.DB_PASSWORD,
-    roles: [{ role: "readWrite", db: "offline-dbs" }]
-});
-
 db.createCollection("clothes");
 db.createCollection("merchant");
 db.createCollection("user");
 
-db.merchant.insertMany([
+db.getCollection('merchant').insertMany([
     {
-        _id: {
-            $oid: "64f5c062dceebeebfc5dab71"
-        },
+        // _id: {
+        //     $oid: "64f5c062dceebeebfc5dab71"
+        // },
         id: "typi11",
         username: "김도윤",
         password:
@@ -44,11 +38,11 @@ db.merchant.insertMany([
     }
 ]);
 
-db.clothes.insertMany([
+db.getCollection('clothes').insertMany([
     {
-        _id: {
-            $oid: "64f5c08fdceebeebfc5dab72"
-        },
+        // _id: {
+        //     $oid: "64f5c08fdceebeebfc5dab72"
+        // },
         name: "가격이엄청비싸지만세일을절대안해주는옷",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
@@ -68,9 +62,9 @@ db.clothes.insertMany([
         }
     },
     {
-        _id: {
-            $oid: "64f5c09cdceebeebfc5dab73"
-        },
+        // _id: {
+        //     $oid: "64f5c09cdceebeebfc5dab73"
+        // },
         name: "엉덩이가뿡삥빵하는옷",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
@@ -90,9 +84,9 @@ db.clothes.insertMany([
         }
     },
     {
-        _id: {
-            $oid: "64f5c2b0dceebeebfc5dab74"
-        },
+        // _id: {
+        //     $oid: "64f5c2b0dceebeebfc5dab74"
+        // },
         name: "라잎고즈노잉니노잉니노잉니농니",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
@@ -112,9 +106,9 @@ db.clothes.insertMany([
         }
     },
     {
-        _id: {
-            $oid: "64f5c2bddceebeebfc5dab75"
-        },
+        // _id: {
+        //     $oid: "64f5c2bddceebeebfc5dab75"
+        // },
         name: "먼데이렢미브로큰",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
@@ -134,9 +128,9 @@ db.clothes.insertMany([
         }
     },
     {
-        _id: {
-            $oid: "64f5c2cadceebeebfc5dab76"
-        },
+        // _id: {
+        //     $oid: "64f5c2cadceebeebfc5dab76"
+        // },
         name: "웬아워즈어영보이",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
@@ -156,9 +150,9 @@ db.clothes.insertMany([
         }
     },
     {
-        _id: {
-            $oid: "64f5c2dadceebeebfc5dab77"
-        },
+        // _id: {
+        //     $oid: "64f5c2dadceebeebfc5dab77"
+        // },
         name: "포포포포커페이스포포포커페이스",
         price: 9999999,
         size: ["뿡뿡사이즈", "빵빵사이즈", "뿡삥빵사이즈"],
