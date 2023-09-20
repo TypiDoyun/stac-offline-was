@@ -17,6 +17,15 @@ export class Shop extends BaseEntity {
 
     @Column()
     @IsNotEmpty()
+    public address: string;
+
+    @Column()
+    @IsArray()
+    @IsEmpty()
+    public location: number[];
+
+    @Column()
+    @IsNotEmpty()
     @IsString()
     public shopNumber: string;
 

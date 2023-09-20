@@ -6,6 +6,7 @@ import {
     HttpCode,
     HttpStatus,
     Param,
+    Patch,
     Post,
     Query,
     UploadedFile,
@@ -18,6 +19,7 @@ import { ClothesService } from "./clothes.service";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
 import { RegisteredMerchantPrivate, UserField } from "src/common/decorators";
 import { Merchant } from "src/auth/merchant/merchant.entity";
+import { UpdateClothesDto } from "./dto/update-clothes.dto";
 
 @Controller("clothes")
 @UsePipes(ValidationPipe)
@@ -49,6 +51,12 @@ export class ClothesController {
         return value;
     }
 
+    @Get("/own")
+    @RegisteredMerchantPrivate()
+    public async getOwnClothes(@UserField() merchant: Merchant) {
+        return this.clothesService.getOwnClothes(merchant);
+    }
+
     @Get("/location")
     @HttpCode(HttpStatus.OK)
     public async findClothesByLocation(
@@ -66,7 +74,19 @@ export class ClothesController {
 
     @Delete("/:name")
     @RegisteredMerchantPrivate()
-    public async deleteClothesByName(@Param("name") name: string) {
-        return this.clothesService.deleteClothesByName(name);
+    public async deleteClothesByName(
+        @Param("name") name: string,
+        @UserField() merchant: Merchant
+    ) {
+        return this.clothesService.deleteClothesByName(name, merchant);
+    }
+
+    @Patch("/:name")
+    @RegisteredMerchantPrivate()
+    public async updateClothes(
+        @Param("name") name: string,
+        @Body() updateClothesDto: UpdateClothesDto
+    ) {
+        return this.clothesService.updateClothes(name, updateClothesDto);
     }
 }

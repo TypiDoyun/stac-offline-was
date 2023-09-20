@@ -5,5 +5,6 @@ export class RegisterShopDto extends PickType(Shop, [
     "name",
     "logo",
     "shopNumber",
+    "address",
     "registrationNumber"
 ]) {}

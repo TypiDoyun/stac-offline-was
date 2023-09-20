@@ -1,4 +1,5 @@
 export interface JwtTokens {
     accessToken: string;
     refreshToken: string;
+    isMerchant: boolean;
 }

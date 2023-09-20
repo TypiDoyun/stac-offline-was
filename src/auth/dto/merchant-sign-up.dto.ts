@@ -7,6 +7,5 @@ export class MerchantSignUpDto extends PickType(Merchant, [
     "password",
     "phoneNumber",
     "birthday",
-    "location",
     "residentNumber"
 ]) {}

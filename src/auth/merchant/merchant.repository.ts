@@ -19,10 +19,7 @@ export class MerchantRepository {
         return !(await this.findMerchantById(id));
     }
 
-    public async createMerchant(
-        merchantSignUpDto: MerchantSignUpDto,
-        address: string
-    ) {
+    public async createMerchant(merchantSignUpDto: MerchantSignUpDto) {
         const { password } = merchantSignUpDto;
 
         const salt = await genSalt();
@@ -31,7 +28,6 @@ export class MerchantRepository {
         const merchant = this.repository.create({
             ...merchantSignUpDto,
             password: hashedPassword,
-            address,
             shop: null
         });
 
@@ -46,23 +42,30 @@ export class MerchantRepository {
 
     public async registerShop(
         registerShopDto: RegisterShopDto,
-        merchant: Merchant
+        merchant: Merchant,
+        location: number[]
     ) {
-        const { name, logo, shopNumber, registrationNumber } = registerShopDto;
-        return this.repository.update(
+        const { name, logo, shopNumber, registrationNumber, address } =
+            registerShopDto;
+        const updatedShop = {
+            name,
+            logo,
+            shopNumber,
+            registrationNumber,
+            address,
+            location,
+            ownerId: merchant._id
+        };
+
+        await this.repository.update(
             {
                 _id: merchant._id
             },
             {
-                shop: {
-                    name,
-                    logo,
-                    shopNumber,
-                    registrationNumber,
-                    ownerId: merchant._id
-                }
+                shop: updatedShop
             }
         );
+        return updatedShop;
     }
 
     public async findMerchantById(id: string): Promise<Merchant | undefined> {
@@ -84,7 +87,7 @@ export class MerchantRepository {
 
     public async findMerchantByLocation(location: number[], distance: number) {
         const merchants = (await this.repository.find()).filter((merchant) => {
-            const calcDistance = getDistance(location, merchant.location);
+            const calcDistance = getDistance(location, merchant.shop.location);
             return calcDistance <= distance;
         });
 

@@ -6,7 +6,8 @@ import {
 import {
     BadRequestException,
     ConflictException,
-    Injectable
+    Injectable,
+    NotFoundException
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
@@ -15,6 +16,7 @@ import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Merchant } from "src/auth/merchant/merchant.entity";
 import { MerchantRepository } from "src/auth/merchant/merchant.repository";
+import { UpdateClothesDto } from "./dto/update-clothes.dto";
 
 @Injectable()
 export class ClothesService {
@@ -44,9 +46,7 @@ export class ClothesService {
         createClothesDto: CreateClothesDto,
         merchant: Merchant
     ) {
-        const imageLinks: string[] = [
-            "https://dy-03-bucket.s3.ap-northeast-2.amazonaws.com/bomb.png"
-        ];
+        const imageLinks: string[] = [];
         try {
             await this.clothesRepository.save({
                 ...createClothesDto,
@@ -70,6 +70,7 @@ export class ClothesService {
             try {
                 await this.S3.send(new PutObjectCommand(params));
             } catch (error) {
+                console.log("S3");
                 throw new BadRequestException(
                     "can't send PutObjectCommand to S3"
                 );
@@ -88,6 +89,26 @@ export class ClothesService {
             where: {
                 name
             }
+        });
+    }
+
+    public async getOwnClothes(merchant: Merchant) {
+        const ownClothes = await this.clothesRepository.find({
+            where: {
+                ownerId: merchant._id
+            }
+        });
+
+        const ownersPromise = ownClothes.map((clothes) =>
+            this.merchantRepository.findMerchantByOId(clothes.ownerId)
+        );
+        const owners = await Promise.all(ownersPromise);
+
+        return ownClothes.map((clothes, i) => {
+            return {
+                ...clothes,
+                owner: owners[i]
+            };
         });
     }
 
@@ -120,9 +141,41 @@ export class ClothesService {
         return clothes;
     }
 
-    public async deleteClothesByName(name: string) {
-        if (!this.clothesRepository.exist({ where: { name } }))
-            throw new BadRequestException("clothes not found");
+    public async deleteClothesByName(name: string, merchant: Merchant) {
+        const found = await this.clothesRepository.find({
+            where: { name, ownerId: merchant._id }
+        });
+        if (found.length == 0)
+            throw new NotFoundException("can not find clothes");
         this.clothesRepository.delete({ name });
+    }
+
+    public async updateClothes(
+        name: string,
+        updateClothesDto: UpdateClothesDto
+    ) {
+        const foundClothes = this.clothesRepository.findOneBy({
+            name
+        });
+
+        if (!foundClothes) throw new NotFoundException("can not find clothes");
+
+        if (updateClothesDto.name !== undefined)
+            if (
+                this.clothesRepository.exist({
+                    where: { name: updateClothesDto.name }
+                })
+            )
+                throw new BadRequestException("clothes name already exists");
+
+        return this.clothesRepository.update(
+            {
+                name
+            },
+            {
+                ...foundClothes,
+                ...updateClothesDto
+            }
+        );
     }
 }

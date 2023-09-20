@@ -4,9 +4,21 @@ import { ConfigurationModule } from "./modules/config.module";
 import { APP_PIPE } from "@nestjs/core";
 import { AuthModule } from "./auth/auth.module";
 import { ShopModule } from "./shop/shop.module";
+import { AppController } from "./app.controller";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 
 @Module({
-    imports: [ConfigurationModule, ShopModule, ClothesModule, AuthModule],
+    imports: [
+        ConfigurationModule,
+        ShopModule,
+        ClothesModule,
+        AuthModule,
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, "..", "public"),
+            exclude: ["/api*"]
+        })
+    ],
     providers: [
         {
             provide: APP_PIPE,
@@ -21,6 +33,6 @@ import { ShopModule } from "./shop/shop.module";
             })
         }
     ],
-    controllers: []
+    controllers: [AppController]
 })
 export class AppModule {}

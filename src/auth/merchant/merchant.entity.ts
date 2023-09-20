@@ -6,15 +6,6 @@ import { Shop } from "src/shop/shop.entity";
 @Entity("merchant")
 export class Merchant extends User {
     @Column()
-    @IsArray()
-    @IsNotEmpty()
-    public location: number[];
-
-    @Column()
-    @IsEmpty()
-    public address: string;
-
-    @Column()
     @IsString()
     @IsNotEmpty()
     public residentNumber: string;

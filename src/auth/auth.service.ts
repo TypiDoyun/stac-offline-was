@@ -43,27 +43,10 @@ export class AuthService {
     public async merchantSignUp(
         merchantSignUpDto: MerchantSignUpDto
     ): Promise<JwtTokens> {
-        const url = `${this.configService.getOrThrow("KAKAO_API_HOST")}?x=${
-            merchantSignUpDto.location[1]
-        }&y=${merchantSignUpDto.location[0]}`;
         try {
-            const pipe = this.httpService
-                .get(url, {
-                    headers: {
-                        Authorization: `KakaoAK ${this.configService.getOrThrow(
-                            "KAKAO_API_KEY"
-                        )}`
-                    }
-                })
-                .pipe();
-
-            const response = await lastValueFrom(pipe);
             if (!(await this.userRepository.canCreate(merchantSignUpDto.id)))
                 throw new ConflictException("user id already exists");
-            await this.merchantRepository.createMerchant(
-                merchantSignUpDto,
-                response.data.documents[0].address_name
-            );
+            await this.merchantRepository.createMerchant(merchantSignUpDto);
 
             const tokens = this.getTokens(merchantSignUpDto.id, true);
             this.updateRefreshToken(
@@ -102,6 +85,7 @@ export class AuthService {
             tokens.refreshToken,
             isMerchant
         );
+        console.log(tokens);
 
         return tokens;
     }
@@ -185,7 +169,8 @@ export class AuthService {
                 expiresIn: this.configService.getOrThrow(
                     "JWT_REFRESH_EXPIRATION_TIME"
                 )
-            })
+            }),
+            isMerchant
         };
 
         return tokens;

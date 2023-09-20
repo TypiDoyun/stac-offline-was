@@ -3,7 +3,7 @@ db = db.getSiblingDB("offline-dbs");
 db.createUser({
     user: process.env.DB_USER,
     pwd: process.env.DB_PASSWORD,
-    roles: [{ role: "readWrite", db: "offline-dbs" }]
+    roles: [{ role: "readWrite", db: "admin" }]
 });
 
 db.createCollection("clothes");

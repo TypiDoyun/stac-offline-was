@@ -1,10 +1,6 @@
 version: "3"
 
 services:
-    app:
-        build: .
-        ports:
-            - 3000:3000
     db:
         image: mongo
         ports:
@@ -15,5 +11,9 @@ services:
         volumes:
             # - db_volume:/data/db
             - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    app:
+        build: .
+        ports:
+            - 3000:3000
 # volumes:
 #     db_volume:

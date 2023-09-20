@@ -1,6 +1,10 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
 import { RegisterShopDto } from "src/auth/dto/register-shop.dto";
-import { MerchantPrivate, UserField } from "src/common/decorators";
+import {
+    MerchantPrivate,
+    RegisteredMerchantPrivate,
+    UserField
+} from "src/common/decorators";
 import { ShopService } from "./shop.service";
 import { Merchant } from "src/auth/merchant/merchant.entity";
 
@@ -16,5 +20,11 @@ export class ShopController {
     ) {
         console.log(merchant);
         return this.shopService.registerShop(registerShopDto, merchant);
+    }
+
+    @Get()
+    @RegisteredMerchantPrivate()
+    public async getShop(@UserField() merchant: Merchant) {
+        return this.shopService.getShop(merchant);
     }
 }
