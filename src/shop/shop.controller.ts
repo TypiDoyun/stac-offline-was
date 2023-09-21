@@ -28,6 +28,7 @@ export class ShopController {
         @Body() registerShopDto: RegisterShopDto,
         @UserField() merchant: Merchant
     ) {
+        console.log("registerShop request received!");
         console.log(merchant);
         return this.shopService.registerShop(registerShopDto, merchant);
     }
