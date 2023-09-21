@@ -51,12 +51,10 @@ export class MerchantRepository {
         merchant: Merchant,
         location: number[]
     ) {
-        const { name, logo, shopNumber, registrationNumber, address } =
-            registerShopDto;
+        const { name, logo, registrationNumber, address } = registerShopDto;
         const updatedShop = {
             name,
             logo,
-            shopNumber,
             registrationNumber,
             address,
             location,
