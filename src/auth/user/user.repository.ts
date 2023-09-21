@@ -13,6 +13,12 @@ export class UserRepository {
         this.repository = this.dataSource.getRepository(User);
     }
 
+    public async deleteUser(id: ObjectId) {
+        return this.repository.delete({
+            _id: id
+        });
+    }
+
     public async canCreate(id: string) {
         return !(await this.findUserById(id));
     }

@@ -9,12 +9,12 @@ import {
     Patch,
     Post,
     Query,
-    UploadedFile,
+    UploadedFiles,
     UseInterceptors,
     UsePipes,
     ValidationPipe
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FilesInterceptor } from "@nestjs/platform-express";
 import { ClothesService } from "./clothes.service";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
 import { RegisteredMerchantPrivate, UserField } from "src/common/decorators";
@@ -28,10 +28,10 @@ export class ClothesController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @UseInterceptors(FileInterceptor("images"))
+    @UseInterceptors(FilesInterceptor("images"))
     @RegisteredMerchantPrivate()
     public createClothes(
-        @UploadedFile() images: Express.Multer.File[] = [],
+        @UploadedFiles() images: Express.Multer.File[] = [],
         @Body() createClothesDto: CreateClothesDto,
         @UserField() merchant: Merchant
     ) {

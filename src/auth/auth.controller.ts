@@ -40,7 +40,7 @@ export class AuthController {
         userSignUpDto: UserSignUpDto
     ): Promise<JwtTokens> {
         console.log("user-signup request received!");
-        return await this.authService.userSignUp(userSignUpDto);
+        return this.authService.userSignUp(userSignUpDto);
     }
 
     @Post("/merchant-signup")
@@ -60,7 +60,7 @@ export class AuthController {
         signInDto: SignInDto
     ): Promise<JwtTokens> {
         console.log("signin request received!");
-        return await this.authService.signIn(signInDto);
+        return this.authService.signIn(signInDto);
     }
 
     @Post("/signout")
@@ -68,7 +68,14 @@ export class AuthController {
     @Private()
     public async signOut(@UserField() user: User) {
         console.log("signout request received!");
-        return await this.authService.signOut(user.id);
+        return this.authService.signOut(user.id);
+    }
+
+    @Post("/withdrawal")
+    @HttpCode(HttpStatus.OK)
+    @Private()
+    public async withdrawal(@UserField() user: User) {
+        return this.authService.withdrawal(user);
     }
 
     @Post("/refresh")

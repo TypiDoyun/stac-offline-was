@@ -3,6 +3,7 @@ import {
     ConflictException,
     ForbiddenException,
     Injectable,
+    NotFoundException,
     UnauthorizedException
 } from "@nestjs/common";
 import { UserRepository } from "./user/user.repository";
@@ -18,6 +19,8 @@ import { MerchantSignUpDto } from "./dto/merchant-sign-up.dto";
 import { MerchantRepository } from "./merchant/merchant.repository";
 import { HttpService } from "@nestjs/axios";
 import { lastValueFrom } from "rxjs";
+import { User } from "./user/user.entity";
+import { ObjectId } from "mongodb";
 
 @Injectable()
 export class AuthService {
@@ -96,6 +99,22 @@ export class AuthService {
         if (!user) throw new ForbiddenException("user not found");
 
         await this.userRepository.updateRefreshToken(id, null);
+    }
+
+    public async withdrawal(user: User) {
+        const foundUser = await this.userRepository.findUserByOId(user._id);
+        const foundMerchant = await this.merchantRepository.findMerchantByOId(
+            user._id
+        );
+        const found = foundUser ?? foundMerchant;
+
+        if (!found) throw new NotFoundException("can not find user");
+
+        const result = found.isMerchant()
+            ? this.merchantRepository.deleteMerchant(found._id)
+            : this.userRepository.deleteUser(found._id);
+
+        return result;
     }
 
     public async refreshTokens(

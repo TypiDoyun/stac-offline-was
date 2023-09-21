@@ -1,4 +1,4 @@
-db = db.getSiblingDB("offline-dbs");
+db = db.getSiblingDB("offline");
 
 db.createCollection("clothes");
 db.createCollection("merchant");

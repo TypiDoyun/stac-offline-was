@@ -4,7 +4,6 @@ import { Shop } from "src/shop/shop.entity";
 export class RegisterShopDto extends PickType(Shop, [
     "name",
     "logo",
-    "shopNumber",
     "address",
     "registrationNumber"
 ]) {}

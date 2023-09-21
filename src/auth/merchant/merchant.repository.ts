@@ -15,6 +15,12 @@ export class MerchantRepository {
         this.repository = this.dataSource.getRepository(Merchant);
     }
 
+    public async deleteMerchant(id: ObjectId) {
+        return this.repository.delete({
+            _id: id
+        });
+    }
+
     public async canCreate(id: string) {
         return !(await this.findMerchantById(id));
     }

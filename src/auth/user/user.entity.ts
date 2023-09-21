@@ -8,6 +8,7 @@ import {
 } from "class-validator";
 import { BaseEntity } from "src/modules/database/core.entity";
 import { Column, Entity, Unique } from "typeorm";
+import { Merchant } from "../merchant/merchant.entity";
 
 @Entity("user")
 @Unique(["id"])
@@ -48,4 +49,8 @@ export class User extends BaseEntity {
     @IsString()
     @Exclude({ toPlainOnly: true })
     public currentHashedRefreshToken?: string;
+
+    public isMerchant(): this is Merchant {
+        return this instanceof Merchant;
+    }
 }
