@@ -1,3 +1,8 @@
+import {
+    PutObjectCommand,
+    PutObjectCommandInput,
+    S3Client
+} from "@aws-sdk/client-s3";
 import { HttpService } from "@nestjs/axios";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -8,13 +13,28 @@ import { MerchantRepository } from "src/auth/merchant/merchant.repository";
 
 @Injectable()
 export class ShopService {
+    public S3: S3Client;
+
     constructor(
         private readonly configService: ConfigService,
         private readonly merchantRepository: MerchantRepository,
         private readonly httpService: HttpService
-    ) {}
+    ) {
+        this.S3 = new S3Client({
+            region: this.configService.getOrThrow("AWS_BUCKET_REGION"),
+            credentials: {
+                accessKeyId: this.configService.getOrThrow(
+                    "AWS_BUCKET_ACCESS_KEY"
+                ),
+                secretAccessKey: this.configService.getOrThrow(
+                    "AWS_BUCKET_PRIVATE_KEY"
+                )
+            }
+        });
+    }
 
     public async registerShop(
+        logo: Express.Multer.File,
         registerShopDto: RegisterShopDto,
         merchant: Merchant
     ) {
@@ -43,7 +63,44 @@ export class ShopService {
         ]);
     }
 
+    public async uploadImage(logo: Express.Multer.File) {
+        const params: PutObjectCommandInput = {
+            Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
+            Key: `${new Date().toISOString()}.${encodeURIComponent(
+                logo.originalname ?? logo.filename
+            )}`,
+            Body: logo.buffer,
+            ContentType: logo.mimetype
+        };
+        try {
+            await this.S3.send(new PutObjectCommand(params));
+        } catch (error) {
+            console.log("S3");
+            throw new BadRequestException("can't send PutObjectCommand to S3");
+        }
+        const imageLink = `https://${this.configService.getOrThrow(
+            "AWS_BUCKET_NAME"
+        )}.s3.amazonaws.com/${params.Key}`;
+
+        return imageLink;
+    }
+
     public async getShop(merchant: Merchant) {
         return merchant.shop;
+    }
+
+    public async getShopByLocation(locations: number[]) {
+        const merchants = await this.merchantRepository.findMerchantByLocation(
+            locations,
+            1
+        );
+        return merchants.map((merchant) => {
+            delete merchant.password;
+            delete merchant.currentHashedRefreshToken;
+            return {
+                ...merchant.shop,
+                owner: merchant
+            };
+        });
     }
 }

@@ -12,7 +12,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { CreateClothesDto } from "./dto/create-clothes.dto";
 import { Clothes } from "./clothes.entity";
-import { Repository } from "typeorm";
+import { ObjectId, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Merchant } from "src/auth/merchant/merchant.entity";
 import { MerchantRepository } from "src/auth/merchant/merchant.repository";
@@ -42,15 +42,12 @@ export class ClothesService {
     }
 
     public async createClothes(
-        images: Express.Multer.File[],
         createClothesDto: CreateClothesDto,
         merchant: Merchant
     ) {
-        const imageLinks: string[] = [];
         try {
-            await this.clothesRepository.save({
+            return this.clothesRepository.save({
                 ...createClothesDto,
-                images: imageLinks,
                 ownerId: merchant._id
             });
         } catch (error) {
@@ -58,11 +55,15 @@ export class ClothesService {
                 throw new ConflictException("clothes already exists");
             throw error;
         }
+    }
+
+    public async uploadImages(images: Express.Multer.File[]) {
+        const imageLinks = [];
         for (const image of images) {
             const params: PutObjectCommandInput = {
                 Bucket: this.configService.getOrThrow("AWS_BUCKET_NAME"),
                 Key: `${new Date().toISOString()}.${encodeURIComponent(
-                    image.originalname
+                    image.originalname ?? image.filename
                 )}`,
                 Body: image.buffer,
                 ContentType: image.mimetype
@@ -81,6 +82,8 @@ export class ClothesService {
 
             imageLinks.push(imageLink);
         }
+
+        return imageLinks;
     }
 
     public async findClothes(name: string) {
@@ -117,6 +120,9 @@ export class ClothesService {
             location,
             1
         );
+
+        console.log("calculated merchants:");
+        console.log(merchants);
         const clothes: Clothes[] = [];
 
         for (const merchant of merchants) {
@@ -130,15 +136,32 @@ export class ClothesService {
         }
 
         for (let index = 0; index < clothes.length; index++) {
+            const owner = await this.merchantRepository.findMerchantByOId(
+                clothes[index].ownerId
+            );
+
+            delete owner.password;
+            delete owner.currentHashedRefreshToken;
             clothes[index] = {
                 ...clothes[index],
-                owner: await this.merchantRepository.findMerchantByOId(
-                    clothes[index].ownerId
-                )
+                owner
             };
         }
 
+        console.log("calculated clothes:");
+        console.log(clothes);
+
         return clothes;
+    }
+
+    public async findClothesByShopId(id: string) {
+        const foundClothes = await this.clothesRepository.find({
+            where: {
+                ownerId: new ObjectId(id)
+            }
+        });
+
+        return foundClothes;
     }
 
     public async deleteClothesByName(name: string, merchant: Merchant) {

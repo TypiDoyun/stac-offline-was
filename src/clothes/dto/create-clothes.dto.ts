@@ -6,5 +6,6 @@ export class CreateClothesDto extends PickType(Clothes, [
     "price",
     "size",
     "comment",
-    "discountRate"
+    "discountRate",
+    "images"
 ]) {}

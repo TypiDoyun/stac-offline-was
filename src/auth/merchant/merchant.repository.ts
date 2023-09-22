@@ -91,9 +91,13 @@ export class MerchantRepository {
 
     public async findMerchantByLocation(location: number[], distance: number) {
         const merchants = (await this.repository.find()).filter((merchant) => {
+            if (!merchant.shop) return false;
             const calcDistance = getDistance(location, merchant.shop.location);
             return calcDistance <= distance;
         });
+
+        console.log("find merchant locations");
+        console.log(merchants);
 
         return merchants;
     }

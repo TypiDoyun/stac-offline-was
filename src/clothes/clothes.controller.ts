@@ -28,19 +28,20 @@ export class ClothesController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @UseInterceptors(FilesInterceptor("images"))
     @RegisteredMerchantPrivate()
     public createClothes(
-        @UploadedFiles() images: Express.Multer.File[] = [],
         @Body() createClothesDto: CreateClothesDto,
         @UserField() merchant: Merchant
     ) {
         console.log("create clothes requiest received!");
-        return this.clothesService.createClothes(
-            images,
-            createClothesDto,
-            merchant
-        );
+        return this.clothesService.createClothes(createClothesDto, merchant);
+    }
+
+    @Post("/images")
+    @UseInterceptors(FilesInterceptor("images"))
+    @RegisteredMerchantPrivate()
+    public uploadImages(@UploadedFiles() images: Express.Multer.File[] = []) {
+        return this.clothesService.uploadImages(images);
     }
 
     @Get()
@@ -70,6 +71,11 @@ export class ClothesController {
         ]);
 
         return clothes;
+    }
+
+    @Get("/shopid/:id")
+    public async findClothesByShopId(@Param("id") id: string) {
+        return this.clothesService.findClothesByShopId(id);
     }
 
     @Delete("/:name")

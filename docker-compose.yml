@@ -4,7 +4,7 @@ services:
     app:
         build: .
         ports:
-            - 9021:3000
+            - 9021:3000 # default: 9021:3000
         depends_on:
             - db
     db:

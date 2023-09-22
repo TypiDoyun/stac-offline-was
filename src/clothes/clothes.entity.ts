@@ -43,7 +43,7 @@ export class Clothes extends BaseEntity {
     public discountRate: number;
 
     @Column({ array: true })
-    @IsEmpty()
+    @IsNotEmpty()
     public images: string[];
 
     @Column()

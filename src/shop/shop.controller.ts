@@ -3,6 +3,7 @@ import {
     Controller,
     Get,
     Post,
+    Query,
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
@@ -22,17 +23,22 @@ export class ShopController {
 
     @Post()
     @MerchantPrivate()
-    @UseInterceptors(FileInterceptor("image"))
     public async registerShop(
-        @UploadedFile() image: Express.Multer.File,
+        @UploadedFile() logo: Express.Multer.File,
         @Body() registerShopDto: RegisterShopDto,
         @UserField() merchant: Merchant
     ) {
         console.log("registerShop request received!");
         console.log(merchant);
-        return this.shopService.registerShop(registerShopDto, merchant);
+        return this.shopService.registerShop(logo, registerShopDto, merchant);
     }
 
+    @Post("/image")
+    @MerchantPrivate()
+    @UseInterceptors(FileInterceptor("logo"))
+    public async uploadImage(@UploadedFile() logo: Express.Multer.File) {
+        return this.shopService.uploadImage(logo);
+    }
     @Get()
     @RegisteredMerchantPrivate()
     public async getShop(@UserField() merchant: Merchant) {
@@ -40,5 +46,18 @@ export class ShopController {
         const a = await this.shopService.getShop(merchant);
         console.log(a);
         return a;
+    }
+
+    @Get("/location")
+    public async getShopByLocation(
+        @Query("latitude") latitude: number,
+        @Query("longitude") longitude: number
+    ) {
+        const foundShops = await this.shopService.getShopByLocation([
+            latitude,
+            longitude
+        ]);
+
+        return foundShops;
     }
 }
