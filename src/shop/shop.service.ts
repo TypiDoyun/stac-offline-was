@@ -72,6 +72,7 @@ export class ShopService {
                 ]
             );
         } catch (error) {
+            console.log(error);
             throw new ConflictException("location translate failed");
         }
     }
