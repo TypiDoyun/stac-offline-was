@@ -49,6 +49,8 @@ export class ShopService {
             registerShopDto.address
         }`;
 
+        console.log(url);
+
         try {
             const pipe = this.httpService
                 .get(url, {
