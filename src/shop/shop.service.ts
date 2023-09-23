@@ -4,7 +4,11 @@ import {
     S3Client
 } from "@aws-sdk/client-s3";
 import { HttpService } from "@nestjs/axios";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { lastValueFrom } from "rxjs";
 import { RegisterShopDto } from "src/auth/dto/register-shop.dto";
@@ -45,22 +49,29 @@ export class ShopService {
             registerShopDto.address
         }`;
 
-        const pipe = this.httpService
-            .get(url, {
-                headers: {
-                    Authorization: `KakaoAK ${this.configService.getOrThrow(
-                        "KAKAO_API_KEY"
-                    )}`
-                }
-            })
-            .pipe();
+        try {
+            const pipe = this.httpService
+                .get(url, {
+                    headers: {
+                        Authorization: `KakaoAK ${this.configService.getOrThrow(
+                            "KAKAO_API_KEY"
+                        )}`
+                    }
+                })
+                .pipe();
 
-        const response = await lastValueFrom(pipe);
-
-        return this.merchantRepository.registerShop(registerShopDto, merchant, [
-            +response.data.documents[0].address.y,
-            +response.data.documents[0].address.x
-        ]);
+            const response = await lastValueFrom(pipe);
+            return this.merchantRepository.registerShop(
+                registerShopDto,
+                merchant,
+                [
+                    +response.data.documents[0].address.y,
+                    +response.data.documents[0].address.x
+                ]
+            );
+        } catch (error) {
+            throw new ConflictException("location translate failed");
+        }
     }
 
     public async uploadImage(logo: Express.Multer.File) {
